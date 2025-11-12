@@ -1,0 +1,1478 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local SHARED_MODULE_PATH = ReplicatedStorage.Shared.LaserGunsShared
+
+-- Require the shared module (THIS MUST HAPPEN FIRST)
+local LaserGunsShared = require(SHARED_MODULE_PATH)
+
+-- SETTINGS FOR STABILITY AND POWER
+local FIRE_RATE_DELAY = 0.01 -- Yield time for client stability
+local MAX_IMPULSE = 55343435 -- Your defined high impulse force
+local MAX_RADIUS = 54343434  -- Your defined large radius
+
+-- Tool reference (searches in Character first, then Backpack)
+local Tool = LocalPlayer.Character:FindFirstChild("Laser Gun") or LocalPlayer.Backpack:FindFirstChild("Laser Gun")
+
+-- Toggle state for the auto-fire loop
+local isAutoFiring = false
+
+if Tool then
+    local LaserScript = Tool:FindFirstChild("LaserScript")
+
+    print("--- ⚙️ Initialization: Applying Developer Settings ---")
+
+    -- 1. Disable Original Script & Maximize Projectile Settings
+    if LaserScript then
+        LaserScript.Disabled = true 
+        LaserScript:Destroy()
+        print("✅ Original LaserScript disabled/destroyed.")
+    end
+
+    if LaserGunsShared and LaserGunsShared.Settings then
+        local Settings = LaserGunsShared.Settings
+        
+        -- Apply maximum power settings
+        if Settings.Cooldown and type(Settings.Cooldown.Set) == "function" then
+            Settings.Cooldown:Set(0) -- Your requested zero cooldown
+        end
+        if Settings.MaxBounces and type(Settings.MaxBounces.Set) == "function" then
+            Settings.MaxBounces:Set(math.huge)
+        end
+        if Settings.MaxAge and type(Settings.MaxAge.Set) == "function" then
+            Settings.MaxAge:Set(math.huge)
+        end
+        if Settings.Speed and type(Settings.Speed.Set) == "function" then
+            Settings.Speed:Set(math.huge)
+        end
+        if Settings.ImpulseForce and type(Settings.ImpulseForce.Set) == "function" then
+            Settings.ImpulseForce:Set(MAX_IMPULSE)
+        end
+        if Settings.Radius and type(Settings.Radius.Set) == "function" then
+            Settings.Radius:Set(MAX_RADIUS)
+        end
+        print("✅ Projectile settings maximized.")
+    end
+
+    -- 2. Keybind Input Detection (Equip/Toggle)
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if input.KeyCode == Enum.KeyCode.X and not gameProcessed and Tool then
+            
+            -- If not currently firing, check if tool is in backpack and equip it
+            if not isAutoFiring and Tool.Parent == LocalPlayer.Backpack then
+                Tool.Parent = LocalPlayer.Character -- Equips the tool
+                print("Tool equipped.")
+            elseif isAutoFiring and Tool.Parent == LocalPlayer.Character then
+                -- Optional: If turning off auto-fire, unequip the tool back to backpack
+                -- Tool.Parent = LocalPlayer.Backpack
+                -- print("Tool unequipped.")
+            end
+
+            -- Toggle the auto-fire state
+            isAutoFiring = not isAutoFiring 
+            print(isAutoFiring and "Auto-Fire: ▶️ ON (Press X again to stop)" or "Auto-Fire: ⏸️ OFF")
+        end
+    end)
+
+    -- 3. Continuous Firing Loop
+    task.spawn(function()
+        while true do
+            if isAutoFiring then
+                -- Fires only if the auto-fire toggle is ON
+                LaserGunsShared.ShootLocal()
+            end
+            
+            -- Yield to prevent client freezing
+            task.wait(FIRE_RATE_DELAY) 
+        end
+    end)
+    
+    print("------------------------------------------")
+    print("Auto-Fire Keybind Initialized. Use 'X' to equip/toggle firing.")
+
+else
+    print("❌ Could not find the 'Laser Gun' tool.")
+end
+
+
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local SHARED_MODULE_PATH = ReplicatedStorage.Shared.LaserGunsShared
+
+-- Require the shared module (THIS MUST HAPPEN FIRST)
+local LaserGunsShared = require(SHARED_MODULE_PATH)
+
+-- SETTINGS FOR STABILITY AND POWER
+local FIRE_RATE_DELAY = 0.01 -- Yield time for client stability
+local MAX_IMPULSE = 55343435 -- Your defined high impulse force
+local MAX_RADIUS = 54343434  -- Your defined large radius
+
+-- Tool reference (searches in Character first, then Backpack)
+local Tool = LocalPlayer.Character:FindFirstChild("Laser Gun") or LocalPlayer.Backpack:FindFirstChild("Laser Gun")
+
+-- Toggle state for the auto-fire loop
+local isAutoFiring = false
+
+if Tool then
+    local LaserScript = Tool:FindFirstChild("LaserScript")
+
+    print("--- ⚙️ Initialization: Applying Developer Settings ---")
+
+    -- 1. Disable Original Script & Maximize Projectile Settings
+    if LaserScript then
+        LaserScript.Disabled = true 
+        LaserScript:Destroy()
+        print("✅ Original LaserScript disabled/destroyed.")
+    end
+
+    if LaserGunsShared and LaserGunsShared.Settings then
+        local Settings = LaserGunsShared.Settings
+        
+        -- Apply maximum power settings
+        if Settings.Cooldown and type(Settings.Cooldown.Set) == "function" then
+            Settings.Cooldown:Set(0) -- Your requested zero cooldown
+        end
+        if Settings.MaxBounces and type(Settings.MaxBounces.Set) == "function" then
+            Settings.MaxBounces:Set(math.huge)
+        end
+        if Settings.MaxAge and type(Settings.MaxAge.Set) == "function" then
+            Settings.MaxAge:Set(math.huge)
+        end
+        if Settings.Speed and type(Settings.Speed.Set) == "function" then
+            Settings.Speed:Set(math.huge)
+        end
+        if Settings.ImpulseForce and type(Settings.ImpulseForce.Set) == "function" then
+            Settings.ImpulseForce:Set(MAX_IMPULSE)
+        end
+        if Settings.Radius and type(Settings.Radius.Set) == "function" then
+            Settings.Radius:Set(MAX_RADIUS)
+        end
+        print("✅ Projectile settings maximized.")
+    end
+
+    -- 2. Keybind Input Detection (Equip/Toggle)
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if input.KeyCode == Enum.KeyCode.X and not gameProcessed and Tool then
+            
+            -- If not currently firing, check if tool is in backpack and equip it
+            if not isAutoFiring and Tool.Parent == LocalPlayer.Backpack then
+                Tool.Parent = LocalPlayer.Character -- Equips the tool
+                print("Tool equipped.")
+            elseif isAutoFiring and Tool.Parent == LocalPlayer.Character then
+                -- Optional: If turning off auto-fire, unequip the tool back to backpack
+                -- Tool.Parent = LocalPlayer.Backpack
+                -- print("Tool unequipped.")
+            end
+
+            -- Toggle the auto-fire state
+            isAutoFiring = not isAutoFiring 
+            print(isAutoFiring and "Auto-Fire: ▶️ ON (Press X again to stop)" or "Auto-Fire: ⏸️ OFF")
+        end
+    end)
+
+    -- 3. Continuous Firing Loop
+    task.spawn(function()
+        while true do
+            if isAutoFiring then
+                -- Fires only if the auto-fire toggle is ON
+                LaserGunsShared.ShootLocal()
+            end
+            
+            -- Yield to prevent client freezing
+            task.wait(FIRE_RATE_DELAY) 
+        end
+    end)
+    
+    print("------------------------------------------")
+    print("Auto-Fire Keybind Initialized. Use 'X' to equip/toggle firing.")
+
+else
+    print("❌ Could not find the 'Laser Gun' tool.")
+end
+
+
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local SHARED_MODULE_PATH = ReplicatedStorage.Shared.LaserGunsShared
+
+-- Require the shared module (THIS MUST HAPPEN FIRST)
+local LaserGunsShared = require(SHARED_MODULE_PATH)
+
+-- SETTINGS FOR STABILITY AND POWER
+local FIRE_RATE_DELAY = 0.01 -- Yield time for client stability
+local MAX_IMPULSE = 55343435 -- Your defined high impulse force
+local MAX_RADIUS = 54343434  -- Your defined large radius
+
+-- Tool reference (searches in Character first, then Backpack)
+local Tool = LocalPlayer.Character:FindFirstChild("Laser Gun") or LocalPlayer.Backpack:FindFirstChild("Laser Gun")
+
+-- Toggle state for the auto-fire loop
+local isAutoFiring = false
+
+if Tool then
+    local LaserScript = Tool:FindFirstChild("LaserScript")
+
+    print("--- ⚙️ Initialization: Applying Developer Settings ---")
+
+    -- 1. Disable Original Script & Maximize Projectile Settings
+    if LaserScript then
+        LaserScript.Disabled = true 
+        LaserScript:Destroy()
+        print("✅ Original LaserScript disabled/destroyed.")
+    end
+
+    if LaserGunsShared and LaserGunsShared.Settings then
+        local Settings = LaserGunsShared.Settings
+        
+        -- Apply maximum power settings
+        if Settings.Cooldown and type(Settings.Cooldown.Set) == "function" then
+            Settings.Cooldown:Set(0) -- Your requested zero cooldown
+        end
+        if Settings.MaxBounces and type(Settings.MaxBounces.Set) == "function" then
+            Settings.MaxBounces:Set(math.huge)
+        end
+        if Settings.MaxAge and type(Settings.MaxAge.Set) == "function" then
+            Settings.MaxAge:Set(math.huge)
+        end
+        if Settings.Speed and type(Settings.Speed.Set) == "function" then
+            Settings.Speed:Set(math.huge)
+        end
+        if Settings.ImpulseForce and type(Settings.ImpulseForce.Set) == "function" then
+            Settings.ImpulseForce:Set(MAX_IMPULSE)
+        end
+        if Settings.Radius and type(Settings.Radius.Set) == "function" then
+            Settings.Radius:Set(MAX_RADIUS)
+        end
+        print("✅ Projectile settings maximized.")
+    end
+
+    -- 2. Keybind Input Detection (Equip/Toggle)
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if input.KeyCode == Enum.KeyCode.X and not gameProcessed and Tool then
+            
+            -- If not currently firing, check if tool is in backpack and equip it
+            if not isAutoFiring and Tool.Parent == LocalPlayer.Backpack then
+                Tool.Parent = LocalPlayer.Character -- Equips the tool
+                print("Tool equipped.")
+            elseif isAutoFiring and Tool.Parent == LocalPlayer.Character then
+                -- Optional: If turning off auto-fire, unequip the tool back to backpack
+                -- Tool.Parent = LocalPlayer.Backpack
+                -- print("Tool unequipped.")
+            end
+
+            -- Toggle the auto-fire state
+            isAutoFiring = not isAutoFiring 
+            print(isAutoFiring and "Auto-Fire: ▶️ ON (Press X again to stop)" or "Auto-Fire: ⏸️ OFF")
+        end
+    end)
+
+    -- 3. Continuous Firing Loop
+    task.spawn(function()
+        while true do
+            if isAutoFiring then
+                -- Fires only if the auto-fire toggle is ON
+                LaserGunsShared.ShootLocal()
+            end
+            
+            -- Yield to prevent client freezing
+            task.wait(FIRE_RATE_DELAY) 
+        end
+    end)
+    
+    print("------------------------------------------")
+    print("Auto-Fire Keybind Initialized. Use 'X' to equip/toggle firing.")
+
+else
+    print("❌ Could not find the 'Laser Gun' tool.")
+end
+
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local SHARED_MODULE_PATH = ReplicatedStorage.Shared.LaserGunsShared
+
+-- Require the shared module (THIS MUST HAPPEN FIRST)
+local LaserGunsShared = require(SHARED_MODULE_PATH)
+
+-- SETTINGS FOR STABILITY AND POWER
+local FIRE_RATE_DELAY = 0.01 -- Yield time for client stability
+local MAX_IMPULSE = 55343435 -- Your defined high impulse force
+local MAX_RADIUS = 54343434  -- Your defined large radius
+
+-- Tool reference (searches in Character first, then Backpack)
+local Tool = LocalPlayer.Character:FindFirstChild("Laser Gun") or LocalPlayer.Backpack:FindFirstChild("Laser Gun")
+
+-- Toggle state for the auto-fire loop
+local isAutoFiring = false
+
+if Tool then
+    local LaserScript = Tool:FindFirstChild("LaserScript")
+
+    print("--- ⚙️ Initialization: Applying Developer Settings ---")
+
+    -- 1. Disable Original Script & Maximize Projectile Settings
+    if LaserScript then
+        LaserScript.Disabled = true 
+        LaserScript:Destroy()
+        print("✅ Original LaserScript disabled/destroyed.")
+    end
+
+    if LaserGunsShared and LaserGunsShared.Settings then
+        local Settings = LaserGunsShared.Settings
+        
+        -- Apply maximum power settings
+        if Settings.Cooldown and type(Settings.Cooldown.Set) == "function" then
+            Settings.Cooldown:Set(0) -- Your requested zero cooldown
+        end
+        if Settings.MaxBounces and type(Settings.MaxBounces.Set) == "function" then
+            Settings.MaxBounces:Set(math.huge)
+        end
+        if Settings.MaxAge and type(Settings.MaxAge.Set) == "function" then
+            Settings.MaxAge:Set(math.huge)
+        end
+        if Settings.Speed and type(Settings.Speed.Set) == "function" then
+            Settings.Speed:Set(math.huge)
+        end
+        if Settings.ImpulseForce and type(Settings.ImpulseForce.Set) == "function" then
+            Settings.ImpulseForce:Set(MAX_IMPULSE)
+        end
+        if Settings.Radius and type(Settings.Radius.Set) == "function" then
+            Settings.Radius:Set(MAX_RADIUS)
+        end
+        print("✅ Projectile settings maximized.")
+    end
+
+    -- 2. Keybind Input Detection (Equip/Toggle)
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if input.KeyCode == Enum.KeyCode.X and not gameProcessed and Tool then
+            
+            -- If not currently firing, check if tool is in backpack and equip it
+            if not isAutoFiring and Tool.Parent == LocalPlayer.Backpack then
+                Tool.Parent = LocalPlayer.Character -- Equips the tool
+                print("Tool equipped.")
+            elseif isAutoFiring and Tool.Parent == LocalPlayer.Character then
+                -- Optional: If turning off auto-fire, unequip the tool back to backpack
+                -- Tool.Parent = LocalPlayer.Backpack
+                -- print("Tool unequipped.")
+            end
+
+            -- Toggle the auto-fire state
+            isAutoFiring = not isAutoFiring 
+            print(isAutoFiring and "Auto-Fire: ▶️ ON (Press X again to stop)" or "Auto-Fire: ⏸️ OFF")
+        end
+    end)
+
+    -- 3. Continuous Firing Loop
+    task.spawn(function()
+        while true do
+            if isAutoFiring then
+                -- Fires only if the auto-fire toggle is ON
+                LaserGunsShared.ShootLocal()
+            end
+            
+            -- Yield to prevent client freezing
+            task.wait(FIRE_RATE_DELAY) 
+        end
+    end)
+    
+    print("------------------------------------------")
+    print("Auto-Fire Keybind Initialized. Use 'X' to equip/toggle firing.")
+
+else
+    print("❌ Could not find the 'Laser Gun' tool.")
+end
+
+
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local SHARED_MODULE_PATH = ReplicatedStorage.Shared.LaserGunsShared
+
+-- Require the shared module (THIS MUST HAPPEN FIRST)
+local LaserGunsShared = require(SHARED_MODULE_PATH)
+
+-- SETTINGS FOR STABILITY AND POWER
+local FIRE_RATE_DELAY = 0.01 -- Yield time for client stability
+local MAX_IMPULSE = 55343435 -- Your defined high impulse force
+local MAX_RADIUS = 54343434  -- Your defined large radius
+
+-- Tool reference (searches in Character first, then Backpack)
+local Tool = LocalPlayer.Character:FindFirstChild("Laser Gun") or LocalPlayer.Backpack:FindFirstChild("Laser Gun")
+
+-- Toggle state for the auto-fire loop
+local isAutoFiring = false
+
+if Tool then
+    local LaserScript = Tool:FindFirstChild("LaserScript")
+
+    print("--- ⚙️ Initialization: Applying Developer Settings ---")
+
+    -- 1. Disable Original Script & Maximize Projectile Settings
+    if LaserScript then
+        LaserScript.Disabled = true 
+        LaserScript:Destroy()
+        print("✅ Original LaserScript disabled/destroyed.")
+    end
+
+    if LaserGunsShared and LaserGunsShared.Settings then
+        local Settings = LaserGunsShared.Settings
+        
+        -- Apply maximum power settings
+        if Settings.Cooldown and type(Settings.Cooldown.Set) == "function" then
+            Settings.Cooldown:Set(0) -- Your requested zero cooldown
+        end
+        if Settings.MaxBounces and type(Settings.MaxBounces.Set) == "function" then
+            Settings.MaxBounces:Set(math.huge)
+        end
+        if Settings.MaxAge and type(Settings.MaxAge.Set) == "function" then
+            Settings.MaxAge:Set(math.huge)
+        end
+        if Settings.Speed and type(Settings.Speed.Set) == "function" then
+            Settings.Speed:Set(math.huge)
+        end
+        if Settings.ImpulseForce and type(Settings.ImpulseForce.Set) == "function" then
+            Settings.ImpulseForce:Set(MAX_IMPULSE)
+        end
+        if Settings.Radius and type(Settings.Radius.Set) == "function" then
+            Settings.Radius:Set(MAX_RADIUS)
+        end
+        print("✅ Projectile settings maximized.")
+    end
+
+    -- 2. Keybind Input Detection (Equip/Toggle)
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if input.KeyCode == Enum.KeyCode.X and not gameProcessed and Tool then
+            
+            -- If not currently firing, check if tool is in backpack and equip it
+            if not isAutoFiring and Tool.Parent == LocalPlayer.Backpack then
+                Tool.Parent = LocalPlayer.Character -- Equips the tool
+                print("Tool equipped.")
+            elseif isAutoFiring and Tool.Parent == LocalPlayer.Character then
+                -- Optional: If turning off auto-fire, unequip the tool back to backpack
+                -- Tool.Parent = LocalPlayer.Backpack
+                -- print("Tool unequipped.")
+            end
+
+            -- Toggle the auto-fire state
+            isAutoFiring = not isAutoFiring 
+            print(isAutoFiring and "Auto-Fire: ▶️ ON (Press X again to stop)" or "Auto-Fire: ⏸️ OFF")
+        end
+    end)
+
+    -- 3. Continuous Firing Loop
+    task.spawn(function()
+        while true do
+            if isAutoFiring then
+                -- Fires only if the auto-fire toggle is ON
+                LaserGunsShared.ShootLocal()
+            end
+            
+            -- Yield to prevent client freezing
+            task.wait(FIRE_RATE_DELAY) 
+        end
+    end)
+    
+    print("------------------------------------------")
+    print("Auto-Fire Keybind Initialized. Use 'X' to equip/toggle firing.")
+
+else
+    print("❌ Could not find the 'Laser Gun' tool.")
+end
+
+
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local SHARED_MODULE_PATH = ReplicatedStorage.Shared.LaserGunsShared
+
+-- Require the shared module (THIS MUST HAPPEN FIRST)
+local LaserGunsShared = require(SHARED_MODULE_PATH)
+
+-- SETTINGS FOR STABILITY AND POWER
+local FIRE_RATE_DELAY = 0.01 -- Yield time for client stability
+local MAX_IMPULSE = 55343435 -- Your defined high impulse force
+local MAX_RADIUS = 54343434  -- Your defined large radius
+
+-- Tool reference (searches in Character first, then Backpack)
+local Tool = LocalPlayer.Character:FindFirstChild("Laser Gun") or LocalPlayer.Backpack:FindFirstChild("Laser Gun")
+
+-- Toggle state for the auto-fire loop
+local isAutoFiring = false
+
+if Tool then
+    local LaserScript = Tool:FindFirstChild("LaserScript")
+
+    print("--- ⚙️ Initialization: Applying Developer Settings ---")
+
+    -- 1. Disable Original Script & Maximize Projectile Settings
+    if LaserScript then
+        LaserScript.Disabled = true 
+        LaserScript:Destroy()
+        print("✅ Original LaserScript disabled/destroyed.")
+    end
+
+    if LaserGunsShared and LaserGunsShared.Settings then
+        local Settings = LaserGunsShared.Settings
+        
+        -- Apply maximum power settings
+        if Settings.Cooldown and type(Settings.Cooldown.Set) == "function" then
+            Settings.Cooldown:Set(0) -- Your requested zero cooldown
+        end
+        if Settings.MaxBounces and type(Settings.MaxBounces.Set) == "function" then
+            Settings.MaxBounces:Set(math.huge)
+        end
+        if Settings.MaxAge and type(Settings.MaxAge.Set) == "function" then
+            Settings.MaxAge:Set(math.huge)
+        end
+        if Settings.Speed and type(Settings.Speed.Set) == "function" then
+            Settings.Speed:Set(math.huge)
+        end
+        if Settings.ImpulseForce and type(Settings.ImpulseForce.Set) == "function" then
+            Settings.ImpulseForce:Set(MAX_IMPULSE)
+        end
+        if Settings.Radius and type(Settings.Radius.Set) == "function" then
+            Settings.Radius:Set(MAX_RADIUS)
+        end
+        print("✅ Projectile settings maximized.")
+    end
+
+    -- 2. Keybind Input Detection (Equip/Toggle)
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if input.KeyCode == Enum.KeyCode.X and not gameProcessed and Tool then
+            
+            -- If not currently firing, check if tool is in backpack and equip it
+            if not isAutoFiring and Tool.Parent == LocalPlayer.Backpack then
+                Tool.Parent = LocalPlayer.Character -- Equips the tool
+                print("Tool equipped.")
+            elseif isAutoFiring and Tool.Parent == LocalPlayer.Character then
+                -- Optional: If turning off auto-fire, unequip the tool back to backpack
+                -- Tool.Parent = LocalPlayer.Backpack
+                -- print("Tool unequipped.")
+            end
+
+            -- Toggle the auto-fire state
+            isAutoFiring = not isAutoFiring 
+            print(isAutoFiring and "Auto-Fire: ▶️ ON (Press X again to stop)" or "Auto-Fire: ⏸️ OFF")
+        end
+    end)
+
+    -- 3. Continuous Firing Loop
+    task.spawn(function()
+        while true do
+            if isAutoFiring then
+                -- Fires only if the auto-fire toggle is ON
+                LaserGunsShared.ShootLocal()
+            end
+            
+            -- Yield to prevent client freezing
+            task.wait(FIRE_RATE_DELAY) 
+        end
+    end)
+    
+    print("------------------------------------------")
+    print("Auto-Fire Keybind Initialized. Use 'X' to equip/toggle firing.")
+
+else
+    print("❌ Could not find the 'Laser Gun' tool.")
+end
+
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local SHARED_MODULE_PATH = ReplicatedStorage.Shared.LaserGunsShared
+
+-- Require the shared module (THIS MUST HAPPEN FIRST)
+local LaserGunsShared = require(SHARED_MODULE_PATH)
+
+-- SETTINGS FOR STABILITY AND POWER
+local FIRE_RATE_DELAY = 0.01 -- Yield time for client stability
+local MAX_IMPULSE = 55343435 -- Your defined high impulse force
+local MAX_RADIUS = 54343434  -- Your defined large radius
+
+-- Tool reference (searches in Character first, then Backpack)
+local Tool = LocalPlayer.Character:FindFirstChild("Laser Gun") or LocalPlayer.Backpack:FindFirstChild("Laser Gun")
+
+-- Toggle state for the auto-fire loop
+local isAutoFiring = false
+
+if Tool then
+    local LaserScript = Tool:FindFirstChild("LaserScript")
+
+    print("--- ⚙️ Initialization: Applying Developer Settings ---")
+
+    -- 1. Disable Original Script & Maximize Projectile Settings
+    if LaserScript then
+        LaserScript.Disabled = true 
+        LaserScript:Destroy()
+        print("✅ Original LaserScript disabled/destroyed.")
+    end
+
+    if LaserGunsShared and LaserGunsShared.Settings then
+        local Settings = LaserGunsShared.Settings
+        
+        -- Apply maximum power settings
+        if Settings.Cooldown and type(Settings.Cooldown.Set) == "function" then
+            Settings.Cooldown:Set(0) -- Your requested zero cooldown
+        end
+        if Settings.MaxBounces and type(Settings.MaxBounces.Set) == "function" then
+            Settings.MaxBounces:Set(math.huge)
+        end
+        if Settings.MaxAge and type(Settings.MaxAge.Set) == "function" then
+            Settings.MaxAge:Set(math.huge)
+        end
+        if Settings.Speed and type(Settings.Speed.Set) == "function" then
+            Settings.Speed:Set(math.huge)
+        end
+        if Settings.ImpulseForce and type(Settings.ImpulseForce.Set) == "function" then
+            Settings.ImpulseForce:Set(MAX_IMPULSE)
+        end
+        if Settings.Radius and type(Settings.Radius.Set) == "function" then
+            Settings.Radius:Set(MAX_RADIUS)
+        end
+        print("✅ Projectile settings maximized.")
+    end
+
+    -- 2. Keybind Input Detection (Equip/Toggle)
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if input.KeyCode == Enum.KeyCode.X and not gameProcessed and Tool then
+            
+            -- If not currently firing, check if tool is in backpack and equip it
+            if not isAutoFiring and Tool.Parent == LocalPlayer.Backpack then
+                Tool.Parent = LocalPlayer.Character -- Equips the tool
+                print("Tool equipped.")
+            elseif isAutoFiring and Tool.Parent == LocalPlayer.Character then
+                -- Optional: If turning off auto-fire, unequip the tool back to backpack
+                -- Tool.Parent = LocalPlayer.Backpack
+                -- print("Tool unequipped.")
+            end
+
+            -- Toggle the auto-fire state
+            isAutoFiring = not isAutoFiring 
+            print(isAutoFiring and "Auto-Fire: ▶️ ON (Press X again to stop)" or "Auto-Fire: ⏸️ OFF")
+        end
+    end)
+
+    -- 3. Continuous Firing Loop
+    task.spawn(function()
+        while true do
+            if isAutoFiring then
+                -- Fires only if the auto-fire toggle is ON
+                LaserGunsShared.ShootLocal()
+            end
+            
+            -- Yield to prevent client freezing
+            task.wait(FIRE_RATE_DELAY) 
+        end
+    end)
+    
+    print("------------------------------------------")
+    print("Auto-Fire Keybind Initialized. Use 'X' to equip/toggle firing.")
+
+else
+    print("❌ Could not find the 'Laser Gun' tool.")
+end
+
+
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local SHARED_MODULE_PATH = ReplicatedStorage.Shared.LaserGunsShared
+
+-- Require the shared module (THIS MUST HAPPEN FIRST)
+local LaserGunsShared = require(SHARED_MODULE_PATH)
+
+-- SETTINGS FOR STABILITY AND POWER
+local FIRE_RATE_DELAY = 0.01 -- Yield time for client stability
+local MAX_IMPULSE = 55343435 -- Your defined high impulse force
+local MAX_RADIUS = 54343434  -- Your defined large radius
+
+-- Tool reference (searches in Character first, then Backpack)
+local Tool = LocalPlayer.Character:FindFirstChild("Laser Gun") or LocalPlayer.Backpack:FindFirstChild("Laser Gun")
+
+-- Toggle state for the auto-fire loop
+local isAutoFiring = false
+
+if Tool then
+    local LaserScript = Tool:FindFirstChild("LaserScript")
+
+    print("--- ⚙️ Initialization: Applying Developer Settings ---")
+
+    -- 1. Disable Original Script & Maximize Projectile Settings
+    if LaserScript then
+        LaserScript.Disabled = true 
+        LaserScript:Destroy()
+        print("✅ Original LaserScript disabled/destroyed.")
+    end
+
+    if LaserGunsShared and LaserGunsShared.Settings then
+        local Settings = LaserGunsShared.Settings
+        
+        -- Apply maximum power settings
+        if Settings.Cooldown and type(Settings.Cooldown.Set) == "function" then
+            Settings.Cooldown:Set(0) -- Your requested zero cooldown
+        end
+        if Settings.MaxBounces and type(Settings.MaxBounces.Set) == "function" then
+            Settings.MaxBounces:Set(math.huge)
+        end
+        if Settings.MaxAge and type(Settings.MaxAge.Set) == "function" then
+            Settings.MaxAge:Set(math.huge)
+        end
+        if Settings.Speed and type(Settings.Speed.Set) == "function" then
+            Settings.Speed:Set(math.huge)
+        end
+        if Settings.ImpulseForce and type(Settings.ImpulseForce.Set) == "function" then
+            Settings.ImpulseForce:Set(MAX_IMPULSE)
+        end
+        if Settings.Radius and type(Settings.Radius.Set) == "function" then
+            Settings.Radius:Set(MAX_RADIUS)
+        end
+        print("✅ Projectile settings maximized.")
+    end
+
+    -- 2. Keybind Input Detection (Equip/Toggle)
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if input.KeyCode == Enum.KeyCode.X and not gameProcessed and Tool then
+            
+            -- If not currently firing, check if tool is in backpack and equip it
+            if not isAutoFiring and Tool.Parent == LocalPlayer.Backpack then
+                Tool.Parent = LocalPlayer.Character -- Equips the tool
+                print("Tool equipped.")
+            elseif isAutoFiring and Tool.Parent == LocalPlayer.Character then
+                -- Optional: If turning off auto-fire, unequip the tool back to backpack
+                -- Tool.Parent = LocalPlayer.Backpack
+                -- print("Tool unequipped.")
+            end
+
+            -- Toggle the auto-fire state
+            isAutoFiring = not isAutoFiring 
+            print(isAutoFiring and "Auto-Fire: ▶️ ON (Press X again to stop)" or "Auto-Fire: ⏸️ OFF")
+        end
+    end)
+
+    -- 3. Continuous Firing Loop
+    task.spawn(function()
+        while true do
+            if isAutoFiring then
+                -- Fires only if the auto-fire toggle is ON
+                LaserGunsShared.ShootLocal()
+            end
+            
+            -- Yield to prevent client freezing
+            task.wait(FIRE_RATE_DELAY) 
+        end
+    end)
+    
+    print("------------------------------------------")
+    print("Auto-Fire Keybind Initialized. Use 'X' to equip/toggle firing.")
+
+else
+    print("❌ Could not find the 'Laser Gun' tool.")
+end
+
+
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local SHARED_MODULE_PATH = ReplicatedStorage.Shared.LaserGunsShared
+
+-- Require the shared module (THIS MUST HAPPEN FIRST)
+local LaserGunsShared = require(SHARED_MODULE_PATH)
+
+-- SETTINGS FOR STABILITY AND POWER
+local FIRE_RATE_DELAY = 0.01 -- Yield time for client stability
+local MAX_IMPULSE = 55343435 -- Your defined high impulse force
+local MAX_RADIUS = 54343434  -- Your defined large radius
+
+-- Tool reference (searches in Character first, then Backpack)
+local Tool = LocalPlayer.Character:FindFirstChild("Laser Gun") or LocalPlayer.Backpack:FindFirstChild("Laser Gun")
+
+-- Toggle state for the auto-fire loop
+local isAutoFiring = false
+
+if Tool then
+    local LaserScript = Tool:FindFirstChild("LaserScript")
+
+    print("--- ⚙️ Initialization: Applying Developer Settings ---")
+
+    -- 1. Disable Original Script & Maximize Projectile Settings
+    if LaserScript then
+        LaserScript.Disabled = true 
+        LaserScript:Destroy()
+        print("✅ Original LaserScript disabled/destroyed.")
+    end
+
+    if LaserGunsShared and LaserGunsShared.Settings then
+        local Settings = LaserGunsShared.Settings
+        
+        -- Apply maximum power settings
+        if Settings.Cooldown and type(Settings.Cooldown.Set) == "function" then
+            Settings.Cooldown:Set(0) -- Your requested zero cooldown
+        end
+        if Settings.MaxBounces and type(Settings.MaxBounces.Set) == "function" then
+            Settings.MaxBounces:Set(math.huge)
+        end
+        if Settings.MaxAge and type(Settings.MaxAge.Set) == "function" then
+            Settings.MaxAge:Set(math.huge)
+        end
+        if Settings.Speed and type(Settings.Speed.Set) == "function" then
+            Settings.Speed:Set(math.huge)
+        end
+        if Settings.ImpulseForce and type(Settings.ImpulseForce.Set) == "function" then
+            Settings.ImpulseForce:Set(MAX_IMPULSE)
+        end
+        if Settings.Radius and type(Settings.Radius.Set) == "function" then
+            Settings.Radius:Set(MAX_RADIUS)
+        end
+        print("✅ Projectile settings maximized.")
+    end
+
+    -- 2. Keybind Input Detection (Equip/Toggle)
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if input.KeyCode == Enum.KeyCode.X and not gameProcessed and Tool then
+            
+            -- If not currently firing, check if tool is in backpack and equip it
+            if not isAutoFiring and Tool.Parent == LocalPlayer.Backpack then
+                Tool.Parent = LocalPlayer.Character -- Equips the tool
+                print("Tool equipped.")
+            elseif isAutoFiring and Tool.Parent == LocalPlayer.Character then
+                -- Optional: If turning off auto-fire, unequip the tool back to backpack
+                -- Tool.Parent = LocalPlayer.Backpack
+                -- print("Tool unequipped.")
+            end
+
+            -- Toggle the auto-fire state
+            isAutoFiring = not isAutoFiring 
+            print(isAutoFiring and "Auto-Fire: ▶️ ON (Press X again to stop)" or "Auto-Fire: ⏸️ OFF")
+        end
+    end)
+
+    -- 3. Continuous Firing Loop
+    task.spawn(function()
+        while true do
+            if isAutoFiring then
+                -- Fires only if the auto-fire toggle is ON
+                LaserGunsShared.ShootLocal()
+            end
+            
+            -- Yield to prevent client freezing
+            task.wait(FIRE_RATE_DELAY) 
+        end
+    end)
+    
+    print("------------------------------------------")
+    print("Auto-Fire Keybind Initialized. Use 'X' to equip/toggle firing.")
+
+else
+    print("❌ Could not find the 'Laser Gun' tool.")
+end
+
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local SHARED_MODULE_PATH = ReplicatedStorage.Shared.LaserGunsShared
+
+-- Require the shared module (THIS MUST HAPPEN FIRST)
+local LaserGunsShared = require(SHARED_MODULE_PATH)
+
+-- SETTINGS FOR STABILITY AND POWER
+local FIRE_RATE_DELAY = 0.01 -- Yield time for client stability
+local MAX_IMPULSE = 55343435 -- Your defined high impulse force
+local MAX_RADIUS = 54343434  -- Your defined large radius
+
+-- Tool reference (searches in Character first, then Backpack)
+local Tool = LocalPlayer.Character:FindFirstChild("Laser Gun") or LocalPlayer.Backpack:FindFirstChild("Laser Gun")
+
+-- Toggle state for the auto-fire loop
+local isAutoFiring = false
+
+if Tool then
+    local LaserScript = Tool:FindFirstChild("LaserScript")
+
+    print("--- ⚙️ Initialization: Applying Developer Settings ---")
+
+    -- 1. Disable Original Script & Maximize Projectile Settings
+    if LaserScript then
+        LaserScript.Disabled = true 
+        LaserScript:Destroy()
+        print("✅ Original LaserScript disabled/destroyed.")
+    end
+
+    if LaserGunsShared and LaserGunsShared.Settings then
+        local Settings = LaserGunsShared.Settings
+        
+        -- Apply maximum power settings
+        if Settings.Cooldown and type(Settings.Cooldown.Set) == "function" then
+            Settings.Cooldown:Set(0) -- Your requested zero cooldown
+        end
+        if Settings.MaxBounces and type(Settings.MaxBounces.Set) == "function" then
+            Settings.MaxBounces:Set(math.huge)
+        end
+        if Settings.MaxAge and type(Settings.MaxAge.Set) == "function" then
+            Settings.MaxAge:Set(math.huge)
+        end
+        if Settings.Speed and type(Settings.Speed.Set) == "function" then
+            Settings.Speed:Set(math.huge)
+        end
+        if Settings.ImpulseForce and type(Settings.ImpulseForce.Set) == "function" then
+            Settings.ImpulseForce:Set(MAX_IMPULSE)
+        end
+        if Settings.Radius and type(Settings.Radius.Set) == "function" then
+            Settings.Radius:Set(MAX_RADIUS)
+        end
+        print("✅ Projectile settings maximized.")
+    end
+
+    -- 2. Keybind Input Detection (Equip/Toggle)
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if input.KeyCode == Enum.KeyCode.X and not gameProcessed and Tool then
+            
+            -- If not currently firing, check if tool is in backpack and equip it
+            if not isAutoFiring and Tool.Parent == LocalPlayer.Backpack then
+                Tool.Parent = LocalPlayer.Character -- Equips the tool
+                print("Tool equipped.")
+            elseif isAutoFiring and Tool.Parent == LocalPlayer.Character then
+                -- Optional: If turning off auto-fire, unequip the tool back to backpack
+                -- Tool.Parent = LocalPlayer.Backpack
+                -- print("Tool unequipped.")
+            end
+
+            -- Toggle the auto-fire state
+            isAutoFiring = not isAutoFiring 
+            print(isAutoFiring and "Auto-Fire: ▶️ ON (Press X again to stop)" or "Auto-Fire: ⏸️ OFF")
+        end
+    end)
+
+    -- 3. Continuous Firing Loop
+    task.spawn(function()
+        while true do
+            if isAutoFiring then
+                -- Fires only if the auto-fire toggle is ON
+                LaserGunsShared.ShootLocal()
+            end
+            
+            -- Yield to prevent client freezing
+            task.wait(FIRE_RATE_DELAY) 
+        end
+    end)
+    
+    print("------------------------------------------")
+    print("Auto-Fire Keybind Initialized. Use 'X' to equip/toggle firing.")
+
+else
+    print("❌ Could not find the 'Laser Gun' tool.")
+end
+
+
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local SHARED_MODULE_PATH = ReplicatedStorage.Shared.LaserGunsShared
+
+-- Require the shared module (THIS MUST HAPPEN FIRST)
+local LaserGunsShared = require(SHARED_MODULE_PATH)
+
+-- SETTINGS FOR STABILITY AND POWER
+local FIRE_RATE_DELAY = 0.01 -- Yield time for client stability
+local MAX_IMPULSE = 55343435 -- Your defined high impulse force
+local MAX_RADIUS = 54343434  -- Your defined large radius
+
+-- Tool reference (searches in Character first, then Backpack)
+local Tool = LocalPlayer.Character:FindFirstChild("Laser Gun") or LocalPlayer.Backpack:FindFirstChild("Laser Gun")
+
+-- Toggle state for the auto-fire loop
+local isAutoFiring = false
+
+if Tool then
+    local LaserScript = Tool:FindFirstChild("LaserScript")
+
+    print("--- ⚙️ Initialization: Applying Developer Settings ---")
+
+    -- 1. Disable Original Script & Maximize Projectile Settings
+    if LaserScript then
+        LaserScript.Disabled = true 
+        LaserScript:Destroy()
+        print("✅ Original LaserScript disabled/destroyed.")
+    end
+
+    if LaserGunsShared and LaserGunsShared.Settings then
+        local Settings = LaserGunsShared.Settings
+        
+        -- Apply maximum power settings
+        if Settings.Cooldown and type(Settings.Cooldown.Set) == "function" then
+            Settings.Cooldown:Set(0) -- Your requested zero cooldown
+        end
+        if Settings.MaxBounces and type(Settings.MaxBounces.Set) == "function" then
+            Settings.MaxBounces:Set(math.huge)
+        end
+        if Settings.MaxAge and type(Settings.MaxAge.Set) == "function" then
+            Settings.MaxAge:Set(math.huge)
+        end
+        if Settings.Speed and type(Settings.Speed.Set) == "function" then
+            Settings.Speed:Set(math.huge)
+        end
+        if Settings.ImpulseForce and type(Settings.ImpulseForce.Set) == "function" then
+            Settings.ImpulseForce:Set(MAX_IMPULSE)
+        end
+        if Settings.Radius and type(Settings.Radius.Set) == "function" then
+            Settings.Radius:Set(MAX_RADIUS)
+        end
+        print("✅ Projectile settings maximized.")
+    end
+
+    -- 2. Keybind Input Detection (Equip/Toggle)
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if input.KeyCode == Enum.KeyCode.X and not gameProcessed and Tool then
+            
+            -- If not currently firing, check if tool is in backpack and equip it
+            if not isAutoFiring and Tool.Parent == LocalPlayer.Backpack then
+                Tool.Parent = LocalPlayer.Character -- Equips the tool
+                print("Tool equipped.")
+            elseif isAutoFiring and Tool.Parent == LocalPlayer.Character then
+                -- Optional: If turning off auto-fire, unequip the tool back to backpack
+                -- Tool.Parent = LocalPlayer.Backpack
+                -- print("Tool unequipped.")
+            end
+
+            -- Toggle the auto-fire state
+            isAutoFiring = not isAutoFiring 
+            print(isAutoFiring and "Auto-Fire: ▶️ ON (Press X again to stop)" or "Auto-Fire: ⏸️ OFF")
+        end
+    end)
+
+    -- 3. Continuous Firing Loop
+    task.spawn(function()
+        while true do
+            if isAutoFiring then
+                -- Fires only if the auto-fire toggle is ON
+                LaserGunsShared.ShootLocal()
+            end
+            
+            -- Yield to prevent client freezing
+            task.wait(FIRE_RATE_DELAY) 
+        end
+    end)
+    
+    print("------------------------------------------")
+    print("Auto-Fire Keybind Initialized. Use 'X' to equip/toggle firing.")
+
+else
+    print("❌ Could not find the 'Laser Gun' tool.")
+end
+
+
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local SHARED_MODULE_PATH = ReplicatedStorage.Shared.LaserGunsShared
+
+-- Require the shared module (THIS MUST HAPPEN FIRST)
+local LaserGunsShared = require(SHARED_MODULE_PATH)
+
+-- SETTINGS FOR STABILITY AND POWER
+local FIRE_RATE_DELAY = 0.01 -- Yield time for client stability
+local MAX_IMPULSE = 55343435 -- Your defined high impulse force
+local MAX_RADIUS = 54343434  -- Your defined large radius
+
+-- Tool reference (searches in Character first, then Backpack)
+local Tool = LocalPlayer.Character:FindFirstChild("Laser Gun") or LocalPlayer.Backpack:FindFirstChild("Laser Gun")
+
+-- Toggle state for the auto-fire loop
+local isAutoFiring = false
+
+if Tool then
+    local LaserScript = Tool:FindFirstChild("LaserScript")
+
+    print("--- ⚙️ Initialization: Applying Developer Settings ---")
+
+    -- 1. Disable Original Script & Maximize Projectile Settings
+    if LaserScript then
+        LaserScript.Disabled = true 
+        LaserScript:Destroy()
+        print("✅ Original LaserScript disabled/destroyed.")
+    end
+
+    if LaserGunsShared and LaserGunsShared.Settings then
+        local Settings = LaserGunsShared.Settings
+        
+        -- Apply maximum power settings
+        if Settings.Cooldown and type(Settings.Cooldown.Set) == "function" then
+            Settings.Cooldown:Set(0) -- Your requested zero cooldown
+        end
+        if Settings.MaxBounces and type(Settings.MaxBounces.Set) == "function" then
+            Settings.MaxBounces:Set(math.huge)
+        end
+        if Settings.MaxAge and type(Settings.MaxAge.Set) == "function" then
+            Settings.MaxAge:Set(math.huge)
+        end
+        if Settings.Speed and type(Settings.Speed.Set) == "function" then
+            Settings.Speed:Set(math.huge)
+        end
+        if Settings.ImpulseForce and type(Settings.ImpulseForce.Set) == "function" then
+            Settings.ImpulseForce:Set(MAX_IMPULSE)
+        end
+        if Settings.Radius and type(Settings.Radius.Set) == "function" then
+            Settings.Radius:Set(MAX_RADIUS)
+        end
+        print("✅ Projectile settings maximized.")
+    end
+
+    -- 2. Keybind Input Detection (Equip/Toggle)
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if input.KeyCode == Enum.KeyCode.X and not gameProcessed and Tool then
+            
+            -- If not currently firing, check if tool is in backpack and equip it
+            if not isAutoFiring and Tool.Parent == LocalPlayer.Backpack then
+                Tool.Parent = LocalPlayer.Character -- Equips the tool
+                print("Tool equipped.")
+            elseif isAutoFiring and Tool.Parent == LocalPlayer.Character then
+                -- Optional: If turning off auto-fire, unequip the tool back to backpack
+                -- Tool.Parent = LocalPlayer.Backpack
+                -- print("Tool unequipped.")
+            end
+
+            -- Toggle the auto-fire state
+            isAutoFiring = not isAutoFiring 
+            print(isAutoFiring and "Auto-Fire: ▶️ ON (Press X again to stop)" or "Auto-Fire: ⏸️ OFF")
+        end
+    end)
+
+    -- 3. Continuous Firing Loop
+    task.spawn(function()
+        while true do
+            if isAutoFiring then
+                -- Fires only if the auto-fire toggle is ON
+                LaserGunsShared.ShootLocal()
+            end
+            
+            -- Yield to prevent client freezing
+            task.wait(FIRE_RATE_DELAY) 
+        end
+    end)
+    
+    print("------------------------------------------")
+    print("Auto-Fire Keybind Initialized. Use 'X' to equip/toggle firing.")
+
+else
+    print("❌ Could not find the 'Laser Gun' tool.")
+end
+
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local SHARED_MODULE_PATH = ReplicatedStorage.Shared.LaserGunsShared
+
+-- Require the shared module (THIS MUST HAPPEN FIRST)
+local LaserGunsShared = require(SHARED_MODULE_PATH)
+
+-- SETTINGS FOR STABILITY AND POWER
+local FIRE_RATE_DELAY = 0.01 -- Yield time for client stability
+local MAX_IMPULSE = 55343435 -- Your defined high impulse force
+local MAX_RADIUS = 54343434  -- Your defined large radius
+
+-- Tool reference (searches in Character first, then Backpack)
+local Tool = LocalPlayer.Character:FindFirstChild("Laser Gun") or LocalPlayer.Backpack:FindFirstChild("Laser Gun")
+
+-- Toggle state for the auto-fire loop
+local isAutoFiring = false
+
+if Tool then
+    local LaserScript = Tool:FindFirstChild("LaserScript")
+
+    print("--- ⚙️ Initialization: Applying Developer Settings ---")
+
+    -- 1. Disable Original Script & Maximize Projectile Settings
+    if LaserScript then
+        LaserScript.Disabled = true 
+        LaserScript:Destroy()
+        print("✅ Original LaserScript disabled/destroyed.")
+    end
+
+    if LaserGunsShared and LaserGunsShared.Settings then
+        local Settings = LaserGunsShared.Settings
+        
+        -- Apply maximum power settings
+        if Settings.Cooldown and type(Settings.Cooldown.Set) == "function" then
+            Settings.Cooldown:Set(0) -- Your requested zero cooldown
+        end
+        if Settings.MaxBounces and type(Settings.MaxBounces.Set) == "function" then
+            Settings.MaxBounces:Set(math.huge)
+        end
+        if Settings.MaxAge and type(Settings.MaxAge.Set) == "function" then
+            Settings.MaxAge:Set(math.huge)
+        end
+        if Settings.Speed and type(Settings.Speed.Set) == "function" then
+            Settings.Speed:Set(math.huge)
+        end
+        if Settings.ImpulseForce and type(Settings.ImpulseForce.Set) == "function" then
+            Settings.ImpulseForce:Set(MAX_IMPULSE)
+        end
+        if Settings.Radius and type(Settings.Radius.Set) == "function" then
+            Settings.Radius:Set(MAX_RADIUS)
+        end
+        print("✅ Projectile settings maximized.")
+    end
+
+    -- 2. Keybind Input Detection (Equip/Toggle)
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if input.KeyCode == Enum.KeyCode.X and not gameProcessed and Tool then
+            
+            -- If not currently firing, check if tool is in backpack and equip it
+            if not isAutoFiring and Tool.Parent == LocalPlayer.Backpack then
+                Tool.Parent = LocalPlayer.Character -- Equips the tool
+                print("Tool equipped.")
+            elseif isAutoFiring and Tool.Parent == LocalPlayer.Character then
+                -- Optional: If turning off auto-fire, unequip the tool back to backpack
+                -- Tool.Parent = LocalPlayer.Backpack
+                -- print("Tool unequipped.")
+            end
+
+            -- Toggle the auto-fire state
+            isAutoFiring = not isAutoFiring 
+            print(isAutoFiring and "Auto-Fire: ▶️ ON (Press X again to stop)" or "Auto-Fire: ⏸️ OFF")
+        end
+    end)
+
+    -- 3. Continuous Firing Loop
+    task.spawn(function()
+        while true do
+            if isAutoFiring then
+                -- Fires only if the auto-fire toggle is ON
+                LaserGunsShared.ShootLocal()
+            end
+            
+            -- Yield to prevent client freezing
+            task.wait(FIRE_RATE_DELAY) 
+        end
+    end)
+    
+    print("------------------------------------------")
+    print("Auto-Fire Keybind Initialized. Use 'X' to equip/toggle firing.")
+
+else
+    print("❌ Could not find the 'Laser Gun' tool.")
+end
+
+
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local SHARED_MODULE_PATH = ReplicatedStorage.Shared.LaserGunsShared
+
+-- Require the shared module (THIS MUST HAPPEN FIRST)
+local LaserGunsShared = require(SHARED_MODULE_PATH)
+
+-- SETTINGS FOR STABILITY AND POWER
+local FIRE_RATE_DELAY = 0.01 -- Yield time for client stability
+local MAX_IMPULSE = 55343435 -- Your defined high impulse force
+local MAX_RADIUS = 54343434  -- Your defined large radius
+
+-- Tool reference (searches in Character first, then Backpack)
+local Tool = LocalPlayer.Character:FindFirstChild("Laser Gun") or LocalPlayer.Backpack:FindFirstChild("Laser Gun")
+
+-- Toggle state for the auto-fire loop
+local isAutoFiring = false
+
+if Tool then
+    local LaserScript = Tool:FindFirstChild("LaserScript")
+
+    print("--- ⚙️ Initialization: Applying Developer Settings ---")
+
+    -- 1. Disable Original Script & Maximize Projectile Settings
+    if LaserScript then
+        LaserScript.Disabled = true 
+        LaserScript:Destroy()
+        print("✅ Original LaserScript disabled/destroyed.")
+    end
+
+    if LaserGunsShared and LaserGunsShared.Settings then
+        local Settings = LaserGunsShared.Settings
+        
+        -- Apply maximum power settings
+        if Settings.Cooldown and type(Settings.Cooldown.Set) == "function" then
+            Settings.Cooldown:Set(0) -- Your requested zero cooldown
+        end
+        if Settings.MaxBounces and type(Settings.MaxBounces.Set) == "function" then
+            Settings.MaxBounces:Set(math.huge)
+        end
+        if Settings.MaxAge and type(Settings.MaxAge.Set) == "function" then
+            Settings.MaxAge:Set(math.huge)
+        end
+        if Settings.Speed and type(Settings.Speed.Set) == "function" then
+            Settings.Speed:Set(math.huge)
+        end
+        if Settings.ImpulseForce and type(Settings.ImpulseForce.Set) == "function" then
+            Settings.ImpulseForce:Set(MAX_IMPULSE)
+        end
+        if Settings.Radius and type(Settings.Radius.Set) == "function" then
+            Settings.Radius:Set(MAX_RADIUS)
+        end
+        print("✅ Projectile settings maximized.")
+    end
+
+    -- 2. Keybind Input Detection (Equip/Toggle)
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if input.KeyCode == Enum.KeyCode.X and not gameProcessed and Tool then
+            
+            -- If not currently firing, check if tool is in backpack and equip it
+            if not isAutoFiring and Tool.Parent == LocalPlayer.Backpack then
+                Tool.Parent = LocalPlayer.Character -- Equips the tool
+                print("Tool equipped.")
+            elseif isAutoFiring and Tool.Parent == LocalPlayer.Character then
+                -- Optional: If turning off auto-fire, unequip the tool back to backpack
+                -- Tool.Parent = LocalPlayer.Backpack
+                -- print("Tool unequipped.")
+            end
+
+            -- Toggle the auto-fire state
+            isAutoFiring = not isAutoFiring 
+            print(isAutoFiring and "Auto-Fire: ▶️ ON (Press X again to stop)" or "Auto-Fire: ⏸️ OFF")
+        end
+    end)
+
+    -- 3. Continuous Firing Loop
+    task.spawn(function()
+        while true do
+            if isAutoFiring then
+                -- Fires only if the auto-fire toggle is ON
+                LaserGunsShared.ShootLocal()
+            end
+            
+            -- Yield to prevent client freezing
+            task.wait(FIRE_RATE_DELAY) 
+        end
+    end)
+    
+    print("------------------------------------------")
+    print("Auto-Fire Keybind Initialized. Use 'X' to equip/toggle firing.")
+
+else
+    print("❌ Could not find the 'Laser Gun' tool.")
+end
+
+
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local SHARED_MODULE_PATH = ReplicatedStorage.Shared.LaserGunsShared
+
+-- Require the shared module (THIS MUST HAPPEN FIRST)
+local LaserGunsShared = require(SHARED_MODULE_PATH)
+
+-- SETTINGS FOR STABILITY AND POWER
+local FIRE_RATE_DELAY = 0.01 -- Yield time for client stability
+local MAX_IMPULSE = 55343435 -- Your defined high impulse force
+local MAX_RADIUS = 54343434  -- Your defined large radius
+
+-- Tool reference (searches in Character first, then Backpack)
+local Tool = LocalPlayer.Character:FindFirstChild("Laser Gun") or LocalPlayer.Backpack:FindFirstChild("Laser Gun")
+
+-- Toggle state for the auto-fire loop
+local isAutoFiring = false
+
+if Tool then
+    local LaserScript = Tool:FindFirstChild("LaserScript")
+
+    print("--- ⚙️ Initialization: Applying Developer Settings ---")
+
+    -- 1. Disable Original Script & Maximize Projectile Settings
+    if LaserScript then
+        LaserScript.Disabled = true 
+        LaserScript:Destroy()
+        print("✅ Original LaserScript disabled/destroyed.")
+    end
+
+    if LaserGunsShared and LaserGunsShared.Settings then
+        local Settings = LaserGunsShared.Settings
+        
+        -- Apply maximum power settings
+        if Settings.Cooldown and type(Settings.Cooldown.Set) == "function" then
+            Settings.Cooldown:Set(0) -- Your requested zero cooldown
+        end
+        if Settings.MaxBounces and type(Settings.MaxBounces.Set) == "function" then
+            Settings.MaxBounces:Set(math.huge)
+        end
+        if Settings.MaxAge and type(Settings.MaxAge.Set) == "function" then
+            Settings.MaxAge:Set(math.huge)
+        end
+        if Settings.Speed and type(Settings.Speed.Set) == "function" then
+            Settings.Speed:Set(math.huge)
+        end
+        if Settings.ImpulseForce and type(Settings.ImpulseForce.Set) == "function" then
+            Settings.ImpulseForce:Set(MAX_IMPULSE)
+        end
+        if Settings.Radius and type(Settings.Radius.Set) == "function" then
+            Settings.Radius:Set(MAX_RADIUS)
+        end
+        print("✅ Projectile settings maximized.")
+    end
+
+    -- 2. Keybind Input Detection (Equip/Toggle)
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if input.KeyCode == Enum.KeyCode.X and not gameProcessed and Tool then
+            
+            -- If not currently firing, check if tool is in backpack and equip it
+            if not isAutoFiring and Tool.Parent == LocalPlayer.Backpack then
+                Tool.Parent = LocalPlayer.Character -- Equips the tool
+                print("Tool equipped.")
+            elseif isAutoFiring and Tool.Parent == LocalPlayer.Character then
+                -- Optional: If turning off auto-fire, unequip the tool back to backpack
+                -- Tool.Parent = LocalPlayer.Backpack
+                -- print("Tool unequipped.")
+            end
+
+            -- Toggle the auto-fire state
+            isAutoFiring = not isAutoFiring 
+            print(isAutoFiring and "Auto-Fire: ▶️ ON (Press X again to stop)" or "Auto-Fire: ⏸️ OFF")
+        end
+    end)
+
+    -- 3. Continuous Firing Loop
+    task.spawn(function()
+        while true do
+            if isAutoFiring then
+                -- Fires only if the auto-fire toggle is ON
+                LaserGunsShared.ShootLocal()
+            end
+            
+            -- Yield to prevent client freezing
+            task.wait(FIRE_RATE_DELAY) 
+        end
+    end)
+    
+    print("------------------------------------------")
+    print("Auto-Fire Keybind Initialized. Use 'X' to equip/toggle firing.")
+
+else
+    print("❌ Could not find the 'Laser Gun' tool.")
+end
